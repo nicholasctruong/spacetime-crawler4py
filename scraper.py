@@ -46,7 +46,7 @@ def is_valid(url):
         
         is_within_domain = re.match(
             r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
-            parsed.geturl().lower*()
+            parsed.geturl().lower()
         )
         
         return not_excluded and is_within_domain
