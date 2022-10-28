@@ -32,7 +32,7 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        is_excluded = re.match(
+        not_excluded = not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
@@ -42,12 +42,12 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
         
-        is_within_domain = re.match(
-            r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
-            parsed.path.lower()
-        )
+        # is_within_domain = re.match(
+        #     r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
+        #     parsed.path.lower()
+        # )
         
-        return is_within_domain and not is_excluded
+        return not_excluded # and is_within_domain
 
     except TypeError:
         print ("TypeError for ", parsed)
