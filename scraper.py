@@ -44,12 +44,12 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
         
-        # is_within_domain = re.match(
-        #     r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
-        #     parsed.path.lower()
-        # )
+        is_within_domain = re.match(
+            r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
+            parsed.geturl().lower*()
+        )
         
-        return not_excluded # and is_within_domain
+        return not_excluded and is_within_domain
 
     except TypeError:
         print ("TypeError for ", parsed)
