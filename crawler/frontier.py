@@ -3,6 +3,7 @@ import shelve
 
 from threading import Thread, RLock
 from queue import Queue, Empty
+from glob import glob
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid, is_subdomain
@@ -20,7 +21,9 @@ class Frontier(object):
             self.config.subdomains_file,
         ]
 
-        state_files_exist = [os.path.exists(f) for f in state_files]
+        state_files = [f + '*' for f in state_files]
+
+        state_files_exist = [len(glob(f)) > 0 for f in state_files]
 
         self.logger.info(
             f"TESTING: \n\t{state_files}\n\t{state_files_exist}"
@@ -34,12 +37,19 @@ class Frontier(object):
         elif any(state_files_exist) and restart:
             # State file does exists, but request to start from seed.
             for state_file in state_files:
-                if not os.path.exists(state_file):
-                    continue
-                self.logger.info(
-                    f"Found save state file {state_file}, deleting it."
-                )
-                os.remove(state_file)
+                for i, f in enumerate(glob(state_file)):
+                    self.logger.info(f"DELETING {f}")
+                    if i == 0:
+                        self.logger.info(
+                            f"Found save state file {state_file}, deleting it."
+                        )
+                    os.remove(f)
+                # if not os.path.exists(state_file):
+                #     continue
+                # self.logger.info(
+                #     f"Found save state file {state_file}, deleting it."
+                # )
+                # os.remove(state_file)
 
         # Load existing save file, or create one if it does not exist.
         self.save = shelve.open(self.config.save_file)
