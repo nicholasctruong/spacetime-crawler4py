@@ -1,11 +1,30 @@
 import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from collections import defaultdict
+
+stop_words = {'do', "weren't", 'off', "there's", 'ought', 'whom', 'from', "wouldn't", 'above', 'him', 'this', 'all', "won't", 'yourselves', "she'll", 'to', "they'll", 'again', 'same', "why's", 'while', 'about', "didn't", "he's", 'and', 'would', "i'll", 'more', "don't", 'myself', 'very', "mustn't", 'out', 'here', "where's", "that's", "shan't", 'as', 'does', 'those', 'having', 'over', 'only', 'any', 'itself', "we're", "i'm", 'that', 'what', "you'd", 'herself', 'cannot', "what's", "you've", 'on', 'i', "when's", "how's", 'an', 'has', "hasn't", "let's", 'hers', 'further', 'who', 'you', 'could', "i've", 'had', 'before', 'because', 'themselves', 'am', 'down', "wasn't", 'up', "she's", "haven't", 'she', 'should', 'than', "they've", 'too', 'its', "doesn't", 'there', 'at', 'yourself', 'no', 'did', 'until', 'we', "hadn't", "i'd", "couldn't", "shouldn't", 'their', 'if', 'by', 'own', 'which', 'under', "it's", 'are', 'have', "we'll", "they're", 'he', "aren't", 'my', 'against', 'once', 'through', 'me', 'was', 'is', 'it', 'where', 'doing', 'a', 'be', "here's", 'were', 'been', 'theirs', 'not', 'into', 'so', 'these', 'why', 'most', "we've", 'or', 'her', "who's", "we'd", "he'd", 'after', 'being', 'both', "they'd", 'your', "she'd", "isn't", 'them', "can't", 'for', 'nor', 'yours', 'but', 'in', 'other', 'himself', 'with', 'his', 'of', 'ours\tourselves', 'such', 'they', 'each', "you're", "he'll", 'some', 'between', 'during', 'our', 'the', 'then', 'when', 'few', "you'll", 'below', 'how'}
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     print( [link for link in links if is_valid(link)] )
     return [link for link in links if is_valid(link)]
+
+def token_info(url, resp):
+    if resp.status == 200:
+        soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
+        lines = [string for string in soup.find("body").stripped_strings]
+        tokens = []
+        document_size = 0
+        for line in lines:
+            for token in re.findall(r'[a-zA-Z0-9\']+', line):
+                tokens.append(token.lower())
+                document_size += 1
+        token_dict = defaultdict(int)
+        for token in tokens:
+            if token not in stop_words:
+                token_dict[token] += 1
+        return (document_size, token_dict)
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -20,8 +39,7 @@ def extract_next_links(url, resp):
     
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
-        for string in soup.find("body").stripped_strings:
-            print(url, string)
+
         processed_links = []
         for link in soup.find_all('a'):
             if link.get('href'):
