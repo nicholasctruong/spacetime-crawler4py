@@ -26,7 +26,7 @@ class Worker(Thread):
 
             self.frontier.add_page_details(
                     tbd_url,
-                    *scraper.token_info(scraped_url, resp)
+                    *scraper.token_info(tbd_url, resp)
             )
 
             self.logger.info(
