@@ -15,9 +15,9 @@ class Frontier(object):
 
         state_files = [
             self.config.save_file,
-            self.tokens_file,
-            self.word_count_file,
-            self.subdomains_file,
+            self.config.tokens_file,
+            self.config.word_count_file,
+            self.config.subdomains_file,
         ]
 
         state_files_exist = [os.path.exists(f) for f in state_files]
