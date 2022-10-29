@@ -35,7 +35,7 @@ class Frontier(object):
                 self.logger.info(
                     f"Found save state file {state_file}, deleting it."
                 )
-                os.remove(self.config.save_file)
+                os.remove(state_file)
 
         # Load existing save file, or create one if it does not exist.
         self.save = shelve.open(self.config.save_file)
