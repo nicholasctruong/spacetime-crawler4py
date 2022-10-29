@@ -25,7 +25,7 @@ class Worker(Thread):
             resp = download(tbd_url, self.config, self.logger)
 
             self.frontier.add_page_details(
-                    scraped_url,
+                    tbd_url,
                     *scraper.token_info(scraped_url, resp)
             )
 
