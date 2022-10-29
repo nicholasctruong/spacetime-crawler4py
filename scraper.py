@@ -19,7 +19,9 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
     if resp.status == 200:
-        soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
+        soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
+        for string in soup.find("body").stripped_strings:
+            print(url, string)
         processed_links = []
         for link in soup.find_all('a'):
             if link.get('href'):
