@@ -25,7 +25,7 @@ class Frontier(object):
         if not any(state_files_exist) and not restart:
             # State file does not exist, but request to load save.
             self.logger.info(
-                f"Did not find any save files, starting from seed."
+                f"Did not find any save state files, starting from seed."
             )
         elif any(state_files_exist) and restart:
             # State file does exists, but request to start from seed.
@@ -33,7 +33,7 @@ class Frontier(object):
                 if not os.path.exists(state_file):
                     continue
                 self.logger.info(
-                    f"Found save file {state_file}, deleting it."
+                    f"Found save state file {state_file}, deleting it."
                 )
                 os.remove(self.config.save_file)
 
@@ -92,6 +92,7 @@ class Frontier(object):
         for token in tokens:
             if token not in self.tokens:
                 self.tokens[token] = 0
+                self.tokens.sync()
             self.tokens[token] += 1
             self.tokens.sync()
         
