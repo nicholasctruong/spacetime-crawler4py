@@ -39,27 +39,26 @@ def is_tag_visible(element):
     )
 
 def token_info(url, resp):
-    if resp.status == 200:
+    if 200 <= resp.status <= 299:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
-        visible_text = map(
-            lambda t: t.split(),
-            filter(is_tag_visible, soup.find_all(text=True))
+        visible_text = filter(
+            lambda s: len(s) > 0,
+            map(
+                lambda t: t.strip().lower(),
+                filter(is_tag_visible, soup.find_all(text=True))
+            )
         )
-        print(visible_text)
-        tokens = dict()
+
+        tokens = defaultdict(int)
         document_size = 0
         for line in visible_text:
             for token in re.findall(r'[a-zA-Z0-9\']+', line):
                 document_size += 1
-                token = token.lower()
 
-                if len(token) < 3:
+                if len(token) < 2 or token in stop_words:
                     continue
 
-                if token not in stop_words:
-                    if token not in tokens:
-                        tokens[token] = 0
-                    tokens[token] += 1
+                tokens[token] += 1
 
         return document_size, tokens
         
