@@ -3,7 +3,27 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from collections import defaultdict
 
-stop_words = {'do', "weren't", 'off', "there's", 'ought', 'whom', 'from', "wouldn't", 'above', 'him', 'this', 'all', "won't", 'yourselves', "she'll", 'to', "they'll", 'again', 'same', "why's", 'while', 'about', "didn't", "he's", 'and', 'would', "i'll", 'more', "don't", 'myself', 'very', "mustn't", 'out', 'here', "where's", "that's", "shan't", 'as', 'does', 'those', 'having', 'over', 'only', 'any', 'itself', "we're", "i'm", 'that', 'what', "you'd", 'herself', 'cannot', "what's", "you've", 'on', 'i', "when's", "how's", 'an', 'has', "hasn't", "let's", 'hers', 'further', 'who', 'you', 'could', "i've", 'had', 'before', 'because', 'themselves', 'am', 'down', "wasn't", 'up', "she's", "haven't", 'she', 'should', 'than', "they've", 'too', 'its', "doesn't", 'there', 'at', 'yourself', 'no', 'did', 'until', 'we', "hadn't", "i'd", "couldn't", "shouldn't", 'their', 'if', 'by', 'own', 'which', 'under', "it's", 'are', 'have', "we'll", "they're", 'he', "aren't", 'my', 'against', 'once', 'through', 'me', 'was', 'is', 'it', 'where', 'doing', 'a', 'be', "here's", 'were', 'been', 'theirs', 'not', 'into', 'so', 'these', 'why', 'most', "we've", 'or', 'her', "who's", "we'd", "he'd", 'after', 'being', 'both', "they'd", 'your', "she'd", "isn't", 'them', "can't", 'for', 'nor', 'yours', 'but', 'in', 'other', 'himself', 'with', 'his', 'of', 'ours\tourselves', 'such', 'they', 'each', "you're", "he'll", 'some', 'between', 'during', 'our', 'the', 'then', 'when', 'few', "you'll", 'below', 'how'}
+stop_words = {
+    'do', "weren't", 'off', "there's", 'ought', 'whom', 'from', "wouldn't", 'above',
+    'him', 'this', 'all', "won't", 'yourselves', "she'll", 'to', "they'll", 'again',
+    'same', "why's", 'while', 'about', "didn't", "he's", 'and', 'would', "i'll",
+    'more', "don't", 'myself', 'very', "mustn't", 'out', 'here', "where's", "that's",
+    "shan't", 'as', 'does', 'those', 'having', 'over', 'only', 'any', 'itself',
+    "we're", "i'm", 'that', 'what', "you'd", 'herself', 'cannot', "what's", "you've",
+    'on', 'i', "when's", "how's", 'an', 'has', "hasn't", "let's", 'hers', 'further',
+    'who', 'you', 'could', "i've", 'had', 'before', 'because', 'themselves', 'am',
+    'down', "wasn't", 'up', "she's", "haven't", 'she', 'should', 'than', "they've",
+    'too', 'its', "doesn't", 'there', 'at', 'yourself', 'no', 'did', 'until', 'we',
+    "hadn't", "i'd", "couldn't", "shouldn't", 'their', 'if', 'by', 'own', 'which',
+    'under', "it's", 'are', 'have', "we'll", "they're", 'he', "aren't", 'my',
+    'against', 'once', 'through', 'me', 'was', 'is', 'it', 'where', 'doing', 'a',
+    'be', "here's", 'were', 'been', 'theirs', 'not', 'into', 'so', 'these', 'why',
+    'most', "we've", 'or', 'her', "who's", "we'd", "he'd", 'after', 'being', 'both',
+    "they'd", 'your', "she'd", "isn't", 'them', "can't", 'for', 'nor', 'yours',
+    'but', 'in', 'other', 'himself', 'with', 'his', 'of', 'ours', 'tourselves',
+    'such', 'they', 'each', "you're", "he'll", 'some', 'between', 'during', 'our',
+    'the', 'then', 'when', 'few', "you'll", 'below', 'how'
+}
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -75,6 +95,15 @@ def is_valid(url):
         
         return not_excluded and is_within_domain
 
+    except TypeError:
+        print ("TypeError for ", parsed)
+        raise
+
+def is_subdomain(url):
+    try:
+        parsed = urlparse(url)
+        return bool(re.match(r"^(.*).ics.uci.edu", parsed.geturl().lower()))
+    
     except TypeError:
         print ("TypeError for ", parsed)
         raise

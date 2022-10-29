@@ -5,26 +5,44 @@ from threading import Thread, RLock
 from queue import Queue, Empty
 
 from utils import get_logger, get_urlhash, normalize
-from scraper import is_valid
+from scraper import is_valid, is_subdomain
 
 class Frontier(object):
     def __init__(self, config, restart):
         self.logger = get_logger("FRONTIER")
         self.config = config
         self.to_be_downloaded = list()
-        
-        if not os.path.exists(self.config.save_file) and not restart:
-            # Save file does not exist, but request to load save.
+
+        state_files = [
+            self.config.save_file,
+            self.tokens_file,
+            self.word_count_file,
+            self.subdomains_file,
+        ]
+
+        state_files_exist = [os.path.exists(f) for f in state_files]
+
+        if not any(state_files_exist) and not restart:
+            # State file does not exist, but request to load save.
             self.logger.info(
-                f"Did not find save file {self.config.save_file}, "
-                f"starting from seed.")
-        elif os.path.exists(self.config.save_file) and restart:
-            # Save file does exists, but request to start from seed.
-            self.logger.info(
-                f"Found save file {self.config.save_file}, deleting it.")
-            os.remove(self.config.save_file)
+                f"Did not find any save files, starting from seed."
+            )
+        elif any(state_files_exist) and restart:
+            # State file does exists, but request to start from seed.
+            for state_file in state_files:
+                if not os.path.exists(state_file):
+                    continue
+                self.logger.info(
+                    f"Found save file {state_file}, deleting it."
+                )
+                os.remove(self.config.save_file)
+
         # Load existing save file, or create one if it does not exist.
         self.save = shelve.open(self.config.save_file)
+        self.tokens = shelve.open(self.config.tokens_file)
+        self.word_count = shelve.open(self.config.word_count_file)
+        self.subdomains = shelve.open(self.config.subdomains_file)
+
         if restart:
             for url in self.config.seed_urls:
                 self.add_url(url)
@@ -60,6 +78,33 @@ class Frontier(object):
             self.save[urlhash] = (url, False)
             self.save.sync()
             self.to_be_downloaded.append(url)
+
+    def add_page_details(self, url, word_count, tokens):
+        url = normalize(url)
+        urlhash = get_urlhash(url)
+
+        # Question 2 Aid
+        if urlhash not in self.word_count:
+            self.word_count[urlhash] = (url, word_count)
+            self.word_count.sync()
+
+        # Question 3 Aid
+        for token in tokens:
+            if token not in self.tokens:
+                self.tokens[token] = 0
+            self.tokens[token] += 1
+            self.tokens.sync()
+        
+        # Question 4 Aid
+        if not is_subdomain(url):
+            return
+
+        if urlhash not in self.subdomains:
+            self.subdomains[urlhash] = (url, 1)
+        else:
+            _, prev_count = self.subdomains[urlhash]
+            self.subdomains[urlhash] = (url, prev_count + 1)
+        self.subdomains.sync()
     
     def mark_url_complete(self, url):
         urlhash = get_urlhash(url)
