@@ -45,6 +45,7 @@ def token_info(url, resp):
             lambda t: t.split(),
             filter(is_tag_visible, soup.find_all(text=True))
         )
+        print(visible_text)
         tokens = dict()
         document_size = 0
         for line in visible_text:
