@@ -38,18 +38,11 @@ class Frontier(object):
             # State file does exists, but request to start from seed.
             for state_file in state_files:
                 for i, f in enumerate(glob(state_file)):
-                    self.logger.info(f"DELETING {f}")
                     if i == 0:
                         self.logger.info(
                             f"Found save state file {state_file}, deleting it."
                         )
                     os.remove(f)
-                # if not os.path.exists(state_file):
-                #     continue
-                # self.logger.info(
-                #     f"Found save state file {state_file}, deleting it."
-                # )
-                # os.remove(state_file)
 
         # Load existing save file, or create one if it does not exist.
         self.save = shelve.open(self.config.save_file)

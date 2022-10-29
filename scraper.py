@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from bs4.element import Comment
 from collections import defaultdict
 
 stop_words = {
@@ -30,25 +31,37 @@ def scraper(url, resp):
     print( [link for link in links if is_valid(link)] )
     return [link for link in links if is_valid(link)]
 
+# Referenced from https://stackoverflow.com/questions/1936466/how-to-scrape-only-visible-webpage-text-with-beautifulsoup
+def is_tag_visible(element):
+    invisible_tags = {'style', 'script', 'head', 'title', 'meta', '[document]'}
+    return not (
+        element.parent.name in invisible_tags or isinstance(element, Comment)
+    )
+
 def token_info(url, resp):
-    if 200 <= resp.status <= 299:
+    if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
-        body_text = soup.find("body")
-        if body_text:
-            lines = [string for string in body_text.stripped_strings]
-        else:
-            lines = []
+        visible_text = map(
+            lambda t: t.split(),
+            filter(is_tag_visible, soup.find_all(text=True))
+        )
         tokens = []
         document_size = 0
-        for line in lines:
+        for line in visible_text:
             for token in re.findall(r'[a-zA-Z0-9\']+', line):
-                tokens.append(token.lower())
                 document_size += 1
-        token_dict = defaultdict(int)
-        for token in tokens:
-            if token not in stop_words:
-                token_dict[token] += 1
-        return (document_size, token_dict)
+                token = token.lower()
+
+                if len(token) < 3:
+                    continue
+
+                if token not in stop_words:
+                    if token not in tokens:
+                        tokens[token] = 0
+                    tokens[token] += 1
+
+        return document_size, tokens
+        
     else:
         return (0, dict())
 
