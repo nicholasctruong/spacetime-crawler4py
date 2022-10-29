@@ -31,7 +31,7 @@ def scraper(url, resp):
     return [link for link in links if is_valid(link)]
 
 def token_info(url, resp):
-    if resp.status == 200:
+    if 200 <= resp.status <= 299:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
         body_text = soup.find("body")
         if body_text:
@@ -63,7 +63,7 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
-    if resp.status == 200:
+    if 200 <= resp.status <= 299:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
 
         processed_links = []
