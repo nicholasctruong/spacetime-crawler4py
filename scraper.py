@@ -45,6 +45,8 @@ def token_info(url, resp):
             if token not in stop_words:
                 token_dict[token] += 1
         return (document_size, token_dict)
+    else:
+        return (0, dict())
 
 def extract_next_links(url, resp):
     # Implementation required.
