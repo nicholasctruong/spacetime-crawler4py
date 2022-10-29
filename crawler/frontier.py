@@ -22,6 +22,10 @@ class Frontier(object):
 
         state_files_exist = [os.path.exists(f) for f in state_files]
 
+        self.logger.info(
+            f"TESTING: \n\t{state_files}\n\t{state_files_exist}"
+        )
+
         if not any(state_files_exist) and not restart:
             # State file does not exist, but request to load save.
             self.logger.info(
