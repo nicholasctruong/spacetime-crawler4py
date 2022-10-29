@@ -33,7 +33,11 @@ def scraper(url, resp):
 def token_info(url, resp):
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
-        lines = [string for string in soup.find("body").stripped_strings]
+        body_text = soup.find("body")
+        if body_text:
+            lines = [string for string in body_text.stripped_strings]
+        else:
+            lines = []
         tokens = []
         document_size = 0
         for line in lines:
