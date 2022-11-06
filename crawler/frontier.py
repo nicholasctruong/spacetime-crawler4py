@@ -6,7 +6,7 @@ from queue import Queue, Empty
 from glob import glob
 
 from utils import get_logger, get_urlhash, normalize
-from scraper import is_valid, is_subdomain
+from scraper import get_subdomain, is_valid
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -104,14 +104,16 @@ class Frontier(object):
             self.tokens.sync()
         
         # Question 4 Aid
-        if not is_subdomain(url):
+        subdomain = get_subdomain(url)
+        if not subdomain:
             return
 
-        if urlhash not in self.subdomains:
-            self.subdomains[urlhash] = (url, 1)
+        suburl_hash = get_urlhash(subdomain)
+        if suburl_hash not in self.subdomains:
+            self.subdomains[suburl_hash] = (subdomain, 1)
         else:
-            _, prev_count = self.subdomains[urlhash]
-            self.subdomains[urlhash] = (url, prev_count + 1)
+            _, prev_count = self.subdomains[suburl_hash]
+            self.subdomains[suburl_hash] = (subdomain, prev_count + 1)
         self.subdomains.sync()
     
     def mark_url_complete(self, url):

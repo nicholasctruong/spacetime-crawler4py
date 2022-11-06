@@ -106,22 +106,46 @@ def is_valid(url):
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
-        
-        is_within_domain = re.match(
-            r"^(.*)?(?(1)(.|/))(ics|cs|informatics|stat|(today)?)(.uci.edu)(?(4)(/department/information_computer_sciences))",
+
+        not_file_directory = not (
+            re.match(
+                r"^.*\Wfiles?(\W|$)", parsed.geturl().lower()
+            ) or 
+            re.match(
+                r"^.*\W(css|js|bmp|gif|jpe?g|ico|png|tiff?|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1|thmx|mso|arff|rtf|jar|csv|rm|smil|wmv|swf|wma|zip|rar|gz)(\W|$)",
+                parsed.geturl().lower()
+            )
+        )
+
+        today_domain = re.match(
+            r"today\.uci\.edu/department/information_computer_sciences/?.*",
+            parsed.geturl().lower()
+        )
+
+        ics_domain = re.match(
+            r"^(.*)?(?(1)(\.|/))(ics|cs|informatics|stat)\.uci\.edu",
             parsed.geturl().lower()
         )
         
-        return not_excluded and is_within_domain
+        is_within_domain = bool(today_domain) or bool(ics_domain)
+        
+        return all([not_excluded, not_file_directory, is_within_domain])
 
     except TypeError:
         print ("TypeError for ", parsed)
         raise
 
-def is_subdomain(url):
+def get_subdomain(url):
     try:
         parsed = urlparse(url)
-        return bool(re.match(r"^(.*).ics.uci.edu", parsed.geturl().lower()))
+        if not re.match(r"^(.*).ics.uci.edu", parsed.geturl().lower()):
+            return ""
+        hostname = parsed.hostname
+
+        if hostname == "www.ics.uci.edu":
+            return ""
+
+        return hostname if not hostname.startswith("www.") else hostname[4:]
     
     except TypeError:
         print ("TypeError for ", parsed)
