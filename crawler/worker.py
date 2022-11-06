@@ -43,7 +43,7 @@ class Worker(Thread):
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
 
-            url = normalize(url)
+            url = normalize(tbd_url)
             subdomain_urlhash = get_urlhash(url)
             if subdomain_urlhash != self.current_subdomain:
                 self.current_subdomain = subdomain_urlhash
