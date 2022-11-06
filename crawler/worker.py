@@ -6,6 +6,8 @@ from utils import get_logger
 import scraper
 import time
 from utils import get_logger, get_urlhash, normalize
+from simhash import Simhash, SimhashIndex
+import uuid
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -13,6 +15,7 @@ class Worker(Thread):
         self.config = config
         self.frontier = frontier
 
+        self.simhash_index = SimhashIndex([])
         self.traps = set()
         self.current_subdomain = ''
         self.current_subdomain_time = time.time()
@@ -28,10 +31,12 @@ class Worker(Thread):
                 break
 
             resp = download(tbd_url, self.config, self.logger)
-            
+            document_size, tokens = scraper.token_info(tbd_url, resp)
+
             self.frontier.add_page_details(
                     tbd_url,
-                    *scraper.token_info(tbd_url, resp)
+                    document_size,
+                    tokens
             )
 
             self.logger.info(
@@ -43,13 +48,14 @@ class Worker(Thread):
             if subdomain_urlhash != self.current_subdomain:
                 self.current_subdomain = subdomain_urlhash
                 self.current_subdomain_time = time.time()
-            if time.time() - self.current_subdomain_time >= 3600:
+            if (time.time() - self.current_subdomain_time >= 3600) or self.simhash_index.get_near_dups(Simhash(tokens)):
                 self.traps.add(subdomain_urlhash)
             if subdomain_urlhash not in self.traps:
                 scraped_urls = scraper.scraper(tbd_url, resp)
             else:
                 scraped_urls = []
 
+            self.simhash_index.add(str(uuid.uuid4), Simhash(tokens))
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
