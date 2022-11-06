@@ -48,7 +48,7 @@ class Worker(Thread):
             if subdomain_urlhash != self.current_subdomain:
                 self.current_subdomain = subdomain_urlhash
                 self.current_subdomain_time = time.time()
-            if (time.time() - self.current_subdomain_time >= 3600) or self.simhash_index.get_near_dups(Simhash(tokens)):
+            if (time.time() - self.current_subdomain_time >= 600) or self.simhash_index.get_near_dups(Simhash(tokens)):
                 self.traps.add(subdomain_urlhash)
             if subdomain_urlhash not in self.traps:
                 scraped_urls = scraper.scraper(tbd_url, resp)
