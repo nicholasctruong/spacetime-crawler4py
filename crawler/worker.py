@@ -44,13 +44,14 @@ class Worker(Thread):
                 f"using cache {self.config.cache_server}.")
 
             url = normalize(url)
-            subdomain_urlhash = get_urlhash(url)
-            if subdomain_urlhash != self.current_subdomain:
-                self.current_subdomain = subdomain_urlhash
+            subdomain = scraper.get_subdomain(url)
+            suburl_hash = get_urlhash(subdomain)
+            if suburl_hash != self.current_subdomain:
+                self.current_subdomain = suburl_hash
                 self.current_subdomain_time = time.time()
             if (time.time() - self.current_subdomain_time >= 600) or self.simhash_index.get_near_dups(Simhash(tokens)):
-                self.traps.add(subdomain_urlhash)
-            if subdomain_urlhash not in self.traps:
+                self.traps.add(suburl_hash)
+            if suburl_hash not in self.traps:
                 scraped_urls = scraper.scraper(tbd_url, resp)
             else:
                 scraped_urls = []
