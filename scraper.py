@@ -28,7 +28,6 @@ stop_words = {
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
-    print( [link for link in links if is_valid(link)] )
     return [link for link in links if is_valid(link)]
 
 # Referenced from https://stackoverflow.com/questions/1936466/how-to-scrape-only-visible-webpage-text-with-beautifulsoup

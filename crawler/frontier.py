@@ -4,6 +4,7 @@ import shelve
 from threading import Thread, RLock
 from queue import Queue, Empty
 from glob import glob
+from collections import deque
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import get_subdomain, is_valid
@@ -12,7 +13,7 @@ class Frontier(object):
     def __init__(self, config, restart):
         self.logger = get_logger("FRONTIER")
         self.config = config
-        self.to_be_downloaded = list()
+        self.to_be_downloaded = deque()
 
         state_files = [
             self.config.save_file,
@@ -74,7 +75,7 @@ class Frontier(object):
 
     def get_tbd_url(self):
         try:
-            return self.to_be_downloaded.pop()
+            return self.to_be_downloaded.popleft()
         except IndexError:
             return None
 
