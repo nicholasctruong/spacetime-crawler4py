@@ -12,7 +12,7 @@ class Frontier(object):
     def __init__(self, config, restart):
         self.logger = get_logger("FRONTIER")
         self.config = config
-        self.to_be_downloaded = deque()
+        self.to_be_downloaded = list()
 
         state_files = [
             self.config.save_file,
