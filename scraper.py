@@ -38,7 +38,7 @@ def is_tag_visible(element):
     )
 
 def token_info(url, resp):
-    if 200 <= resp.status <= 299:
+    if is_valid(url) and 200 <= resp.status <= 299:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
         visible_text = filter(
             lambda s: len(s) > 0,
@@ -75,7 +75,7 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
-    if 200 <= resp.status <= 299:
+    if is_valid(url) and 200 <= resp.status <= 299:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')         
 
         processed_links = []
@@ -96,7 +96,32 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        not_excluded = not re.match(
+        # Removes files directories
+        if re.match(r"^.*\Wfiles?(\W|$)", parsed.geturl().lower()):
+            return False
+
+        # Removes directories with file tag (i.e. /pdf/lesson-1)
+        if re.match(r"^.*/(css|js|bmp|gif|jpe?g|ico|png|tiff?|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1|thmx|mso|arff|rtf|jar|csv|rm|smil|wmv|swf|wma|zip|rar|gz)/.*$", parsed.geturl().lower()):
+            return False
+
+        # Removes urls ending in anything other than (.htm/.html) or no ending tag at all
+        if parsed.path and not re.match(r"^.*/[^\.]*(\.((html?)|(php)))?$", parsed.path.lower()):
+            return False
+
+        # As per https://sites.google.com/site/nyarc3/web-archiving/6-quality-assurance-qa/iii-known-quality-problems-and-improvement-strategies/a-problems-scoping-content-for-crawl-and-capture/a3-crawler-traps
+        # Removes Repeating Directories
+        if re.match(r"^.*?(/[^0-9]+?/).*?\1.*$|^.*?/([^0-9]+?/)\2.*$", parsed.path.lower()):
+            return False
+
+        # Removes repeating fields
+        if re.match(r"^.*(/misc|/sites|/all|/themes|/modules|/profiles|/css|/field|/node|/theme){3}.*$", parsed.path.lower()):
+            return False
+
+        # Removes Calendars
+        if re.match(r"^.*calendar.*$", parsed.path.lower()):
+            return False
+
+        valid = not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
@@ -106,15 +131,6 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
-        not_file_directory = not (
-            re.match(
-                r"^.*\Wfiles?(\W|$)", parsed.geturl().lower()
-            ) or 
-            re.match(
-                r"^.*\W(css|js|bmp|gif|jpe?g|ico|png|tiff?|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1|thmx|mso|arff|rtf|jar|csv|rm|smil|wmv|swf|wma|zip|rar|gz)(\W|$)",
-                parsed.geturl().lower()
-            )
-        )
 
         today_domain = re.match(
             r"today\.uci\.edu/department/information_computer_sciences/?.*",
@@ -128,7 +144,7 @@ def is_valid(url):
         
         is_within_domain = bool(today_domain) or bool(ics_domain)
         
-        return all([not_excluded, not_file_directory, is_within_domain])
+        return valid and is_within_domain
 
     except TypeError:
         print ("TypeError for ", parsed)
